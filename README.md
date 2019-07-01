@@ -1,12 +1,11 @@
-## CollegeSpider.py 是一个用于爬取项目， 用于爬取https://www.wmzy.com/api/rank/schList 中大学的毕业薪酬
-===================================================================
+##### CollegeSpider.py 是一个用于爬取项目， 用于爬取https://www.wmzy.com/api/rank/schList 中大学的毕业薪酬
 
-* ## 环境
-  ---
+* ####### 环境
+  
 使用环境Python 3.6
 使用软件WING101， Pycharm也是可以的
 
-* ## 使用方式
+* ####### 使用方式
 安装Python 3.6
 安装Python WING IDE (WING的其他版本如101， Pycharm都是可以的)
 
