@@ -2,24 +2,27 @@
 ### 项目介绍 <br>
 用于爬取麦当劳在大众点评中的服务，人均消费，价格，地址，好评数量，中评数量，差评数量及文本评论<br>
 
-* 注意事项
+* 注意事项 <br>
  考虑到大众点评上商品的覆盖面广，评论信息价值高。该项目采用selenium框架爬取，放弃部分爬取速度获得稳定性，<br>
  短期内，该爬虫可一直生效，无需对反爬字体的更新做处理
 
-* 运行环境 
+* 运行环境 <br>
  使用环境 Python 3.6 <br>
  使用第三方库 selenium   <br>
+ 使用第三方库 beautfulsoup <br>
  使用软件 WING IDE 101（其他主流IDE都可，这一项非常随意） <br>
 
-* 使用方式
+* 使用方式 <br>
  安装Python 3.6  <br>
- 安装selenium 在cmd中输入pip3 install selenium安装selenium库
- 安装Chromedriver 下载Chromedriver 75版，将文件拖入Chrome浏览器路径下
+ 安装selenium 在cmd中输入pip3 install selenium <br>
+ 安卓beautfulsoup 在cmd中输入 pip3 install beautfulsoip <br>
+ 安装Chromedriver 下载Chromedriver 75版，将文件拖入Chrome浏览器路径下 <br>
  安装Python WING IDE (各主流IDE都是可以的) <br> 
  双击麦当劳.py后保存当前文件到指定路径，点击上方运行按钮即可 <br>
  
- * 期望效果
- 运行程序后弹出一个裸Chrome浏览器页面并自动打开大众点评网页
- 在手动登录后，回到IDE操作区中输入任意字符后回车，浏览器会模拟操作
- 同时，在指定路径下回新建一个Excel文件：朝阳区-麦当劳，该文件储存所有量化数据及对应店铺名称，店铺地址
- 在爬取过程中会不断在同样路径下创建txt文件：XXX（店铺名称），该文件储存所有评论的文本数据
+ * 期望效果 <br>
+ 运行程序后弹出一个裸Chrome浏览器页面并自动打开大众点评网页 <br>
+ 在手动登录后，回到IDE操作区中输入任意字符后回车，浏览器会模拟操作 <br>
+ IDE页面中会不断打印出当前工作进度（麦当劳店铺名，获取的评论所在页面）<br>
+ 同时，在指定路径下回新建一个Excel文件：朝阳区-麦当劳，该文件储存所有量化数据及对应店铺名称，店铺地址 <br>
+ 在爬取过程中会不断在同样路径下创建txt文件：XXX（店铺名称），该文件储存所有评论的文本数据 <br>
