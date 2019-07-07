@@ -133,28 +133,28 @@ pos[2] = pos[1].apply(lambda x: [i for i in x if i.encode('utf-8') not in stop])
 from gensim import corpora,models
 
 # 负面主题分析
-neg_dict = corpora.Dictionary(neg[2])   #词典建立
+neg_dict = corpora.Dictionary(neg[2])   
 
-neg_corpus = [neg_dict.doc2bow(i) for i in neg[2]]  #语料库建立
+neg_corpus = [neg_dict.doc2bow(i) for i in neg[2]]  
 
-neg_lda = models.LdaModel(neg_corpus, num_topics = 10, id2word = neg_dict)   #LDA模型训练
+neg_lda = models.LdaModel(neg_corpus, num_topics = 10, id2word = neg_dict)   
 
 print('#负面主题分析')
 for i in range(10):
     print('topic',i)
-    print(neg_lda.print_topic(i)) #输出主题
+    print(neg_lda.print_topic(i)) 
 
 # 正面主题分析
-pos_dict = corpora.Dictionary(pos[2])   #词典建立
+pos_dict = corpora.Dictionary(pos[2])   
 
-pos_corpus = [pos_dict.doc2bow(i) for i in pos[2]]  #语料库建立
+pos_corpus = [pos_dict.doc2bow(i) for i in pos[2]]  
 
-pos_lda = models.LdaModel(pos_corpus, num_topics = 10, id2word = pos_dict)   #LDA模型训练
+pos_lda = models.LdaModel(pos_corpus, num_topics = 10, id2word = pos_dict)   
 
 print('#正面主题分析')
 for i in range(10):
     print('topic',i)
-    print(pos_lda.print_topic(i)) #输出主题
+    print(pos_lda.print_topic(i)) 
 
 
 
