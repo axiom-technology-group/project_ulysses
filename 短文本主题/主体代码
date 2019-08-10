@@ -1,0 +1,271 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import pandas as pd\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import jieba"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "df = pd.read_csv('comment.csv', encoding='gb18030')"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#df.head()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#df.shape"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import jieba.posseg as psg\n",
+    "con = {}\n",
+    "con['n']= [] # 名词\n",
+    "con['a']= [] # 形容词\n",
+    "con['an']=[] #\n",
+    "con['ad']=[] #\n",
+    "con['i']=[] # 成语\n",
+    "sum= []\n",
+    "n_sum = []\n",
+    "a_sum = []\n",
+    "an_sum = []\n",
+    "ad_sum =[]\n",
+    "i_sum = []\n",
+    "for row in df.iteritems():\n",
+    "    for y in range(0,8615):\n",
+    "        for x in psg.cut(row[1][y]):\n",
+    "            #con = con.append(x.word)\n",
+    "            if (x.flag =='n'): \n",
+    "                con['n'].append(x.word)\n",
+    "                n_sum.append(x.word)\n",
+    "                sum.append(x.word)\n",
+    "            if (x.flag == 'a'):\n",
+    "                con['a'].append(x.word)\n",
+    "                a_sum.append(x.word)\n",
+    "                sum.append(x.word)\n",
+    "            if (x.flag =='an'):\n",
+    "                con['an'].append(x.word)\n",
+    "                an_sum.append(x.word)\n",
+    "                sum.append(x.word)\n",
+    "            if (x.flag =='ad'):\n",
+    "                con['ad'].append(x.word)\n",
+    "                ad_sum.append(x.word)\n",
+    "                sum.append(x.word)\n",
+    "            if (x.flag =='i'):\n",
+    "                con['i'].append(x.word)\n",
+    "                i_sum.append(x.word)\n",
+    "                sum.append(x.word)\n",
+    "           # if(x.flag =='z'):\n",
+    "               # print(x.word)\n",
+    "            #print(con)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 10,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "常用词频度统计结果\n",
+      "不错 2235\n",
+      "味道 1785\n",
+      "薯条 1618\n",
+      "环境 1582\n",
+      "套餐 1484\n",
+      "感觉 1310\n",
+      "方便 1139\n",
+      "服务员 1123\n",
+      "时候 1036\n",
+      "鸡腿 926\n",
+      "早餐 924\n",
+      "口味 711\n",
+      "有点 707\n",
+      "餐厅 707\n",
+      "咖啡 706\n",
+      "地方 629\n",
+      "鸡翅 609\n",
+      "干净 607\n",
+      "甜筒 601\n",
+      "甜品 571\n",
+      "可乐 570\n",
+      "一般 554\n",
+      "态度 513\n",
+      "店里 494\n",
+      "服务态度 480\n",
+      "孩子 471\n",
+      "热情 461\n",
+      "排队 430\n",
+      "座位 414\n",
+      "冰激凌 402\n"
+     ]
+    }
+   ],
+   "source": [
+    "import os, codecs\n",
+    "from collections import Counter\n",
+    "\n",
+    "def get_words(sum):\n",
+    "    c = Counter()\n",
+    "    for x in sum:\n",
+    "        if len(x)>1 and x != '\\r\\n':\n",
+    "            c[x] += 1\n",
+    "    print('常用词频度统计结果')\n",
+    "    for (k,v) in c.most_common(30):\n",
+    "        print(k, v)\n",
+    "get_words(sum)  "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 11,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "常用名词频度统计结果\n",
+      "不错 2235\n",
+      "方便 1139\n",
+      "干净 607\n",
+      "可乐 570\n",
+      "一般 554\n",
+      "正好 307\n",
+      "最爱 282\n",
+      "很大 254\n",
+      "便宜 193\n",
+      "整洁 186\n",
+      "\n",
+      "\n",
+      "常用形容词频度统计结果\n",
+      "卫生 251\n",
+      "麻烦 60\n",
+      "温暖 33\n",
+      "安全 16\n",
+      "困难 16\n",
+      "狼狈 7\n",
+      "衛生 3\n",
+      "偏苦 3\n",
+      "痛苦 3\n",
+      "恐惧 2\n",
+      "\n",
+      "\n",
+      "常用副词词频度统计结果\n",
+      "直接 321\n",
+      "确实 142\n",
+      "积分 126\n",
+      "完全 117\n",
+      "顺便 106\n",
+      "突然 98\n",
+      "顺利 39\n",
+      "迅速 31\n",
+      "认真 25\n",
+      "努力 25\n",
+      "\n",
+      "\n",
+      "常用复杂语频度统计结果\n",
+      "一如既往 197\n",
+      "好久没 127\n",
+      "挺不错 69\n",
+      "聊聊天 24\n",
+      "咬一口 20\n",
+      "真不知道 19\n",
+      "坐地铁 18\n",
+      "服务周到 18\n",
+      "偷工减料 17\n",
+      "人满为患 17\n",
+      "\n",
+      "\n"
+     ]
+    }
+   ],
+   "source": [
+    "def get_words(sum):\n",
+    "    c = Counter()\n",
+    "    for x in sum:\n",
+    "        if len(x)>1 and x != '\\r\\n':\n",
+    "            c[x] += 1\n",
+    "    #print('常用词频度统计结果')\n",
+    "    for (k,v) in c.most_common(10):\n",
+    "        print(k, v)\n",
+    "\n",
+    "print('常用名词频度统计结果')\n",
+    "get_words(a_sum) \n",
+    "print('\\n')\n",
+    "print('常用形容词频度统计结果')\n",
+    "get_words(an_sum) \n",
+    "print('\\n')\n",
+    "print('常用副词词频度统计结果')\n",
+    "get_words(ad_sum) \n",
+    "print('\\n')\n",
+    "print('常用复杂语频度统计结果')\n",
+    "get_words(i_sum) \n",
+    "print('\\n')"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.7.3"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 2
+}
