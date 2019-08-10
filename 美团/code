@@ -1,0 +1,192 @@
+
+
+'''
+爬取美团重庆火锅
+headers必须加上referer和origin
+
+思路：
+1、列表页的数据在json里面
+2、从每一个列表页中提取详情页的id
+3、发送详情页的请求，获取详情页的数据
+'''
+
+import requests
+import json
+import csv
+import re
+import datetime
+
+
+class MeiTuan:
+    def __init__(self):
+
+        # TODO 如果要拿别的主题和地区，修改url和getck_url,headers里面 referer,origin, filename，item["city"]
+        # url是在json里面，需要提取出id，然后发送每一页详情页的id，获取详情页，limit参数可以修改来显示更多，默认32个。我们写大一点，写320万个，一次请求得到全部。
+        self.url = "https://apimobile.meituan.com/group/v4/poi/pcsearch/45?&userid=-1&limit=3200000&offset=64&cateId=-1&q=%E7%81%AB%E9%94%85"
+
+        # 拿主页的cookies
+        self.getck_url = "https://cq.meituan.com/s/%E7%81%AB%E9%94%85/"
+
+        # 每一页的url地址
+        self.url_temp = "https://www.meituan.com/meishi/{}/"
+
+        # 评论页的json，需要构造下面的json获取评论，pageSize可以设置大小，默认10，我们写成1，每一条发送一次请求，offset是起始位置，我们用评论总数便宜offset得到每一条评论。
+        self.comment_url_temp = "https://www.meituan.com/meishi/api/poi/getMerchantComment?platform=1&partner=126&originUrl=https://www.meituan.com/meishi/{}/&riskLevel=1&optimusCode=10&id={}&userId=&offset={}&pageSize=1&sortType=1"
+
+        self.headers = {
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36",
+            "Referer": "https://cq.meituan.com/s/%E7%81%AB%E9%94%85/",
+            "Origin": "https://cq.meituan.com"}
+
+        self.file_name = "重庆火锅.csv"
+
+    # 发送请求，获取响应
+    def get_response_str(self, url):
+        response = requests.get(url, headers=self.headers)
+        response_str = response.content.decode()
+        return response_str
+
+    # 把响应的json变成Python的字典
+    def get_json(self, response_str):
+        return json.loads(response_str)
+
+    # 发送请求给详情页，获取电话和营业时间（这2个字段在详情页里面），其他字段直接在列表页的json数据
+    def get_detail_info(self, url, item):
+        # 必须带上cookies
+        s = requests.Session()
+        s.get(self.getck_url, headers=self.headers)
+
+        response = s.get(url, headers=self.headers)
+        response = response.content.decode()
+
+        # 电话和营业时间
+        item["phone"] = re.findall(r'"phone":"(.*?)"', response)
+        item["phone"] = item["phone"][0] if len(item["phone"]) > 0 else None
+        item["openTime"] = re.findall(r'"openTime":"(.*?)"', response)
+        item["openTime"] = item["openTime"][0] if len(item["openTime"]) > 0 else None
+
+        return item
+
+    # 获取评论列表
+    def get_comments_list(self, url):
+        # 发送请求给评论url
+        response = self.get_response_str(url)
+
+        # 得到json并转化成字段
+        response = self.get_json(response)
+
+        comments_list = response["data"]["comments"]
+
+        return comments_list
+
+    # 获取评论数量
+    def get_comments_amount(self, url, item):
+        response = self.get_response_str(url)
+        response = self.get_json(response)
+        comments_amount = response["data"]["total"]
+        item["comments_amount"] = comments_amount
+        return item
+
+    def get_shop_info(self, id, item):
+        # 城市
+        item["city"] = "重庆"
+
+        # 店名
+        item["name"] = id["title"]
+
+        item["name"] = id["title"]
+
+        # 详情链接
+        item["url"] = self.url_temp.format(id["id"])
+
+        # 店铺地址
+        item["address"] = id["address"]
+
+        # 人均消费
+        item["avgprice"] = id["avgprice"]
+
+        # 平均分数
+        item["avgscore"] = id["avgscore"]
+
+        # 评论数
+        item["comments_amount"] = id["comments"]
+
+        return item
+
+    # 创建表头
+    def create_save_header(self, file_name):
+        with open(file_name, "w", encoding="utf-8-sig") as f:
+            f.write("爬虫名字,爬取时间,评论数,城市,店名,详情链接,地址,人均花费,分数,电话,营业时间,评论计数,评论内容,评论链接")
+            f.write("\n")
+
+    # 保存到csv里面
+    def save_item(self, file_name, item):
+        with open(file_name, "a", encoding="utf-8-sig") as f:
+            writer = csv.DictWriter(f, fieldnames=item.keys())
+            writer.writerow(item)
+
+    def run(self):
+
+        # 创建文件
+        self.create_save_header(self.file_name)
+
+        # 1、发送请求获取列表页响应json
+        response_str = self.get_response_str(self.url)  # 全部json
+        response_str = self.get_json(response_str)
+
+        # 2、获取每一个详情页的url
+        searchResult_list = response_str["data"]["searchResult"]
+
+        for id in searchResult_list:
+            item = {}
+
+            # 爬虫名和爬取时间
+            item["spider_name"] = "美团"
+            item["crawl_time"] = str(datetime.datetime.now())
+            item["crawl_time"] = item["crawl_time"][0:11].replace("-", "/")
+
+            # 3、获取评论数
+            comment_url = self.comment_url_temp.format(id["id"], id["id"], 0)
+            item = self.get_comments_amount(comment_url, item)
+            comments_amount = item["comments_amount"]
+
+            # 4、发送请求获取店铺基本信息
+            self.get_shop_info(id, item)
+
+            # 5、发送请求给详情页，获取电话和营业时间（这2个字段在详情页里面），其他字段直接在列表页的json数据
+            self.get_detail_info(item["url"], item)
+
+            # 6、获取每一条评论
+            comment_count = 1
+            for i in range(0, comments_amount):
+                # 每一条评论url
+                comment_url = self.comment_url_temp.format(id["id"], id["id"], i)
+
+                # 发送每一条评论获取其中的评论文本
+                response = self.get_response_str(comment_url)
+                response = self.get_json(response)
+                item["comment_count"] = comment_count
+                comment_count += 1
+
+                # 评论人名字
+                item["comment_name"] = response["data"]["comments"][0]["userName"]
+
+                # 评论星星数
+                item["star"] = str(response["data"]["comments"][0]["star"])
+                item["star"] = item["star"][0] if len(item["star"]) > 0 else None
+
+                # 评论内容
+                item["comment_content"] = response["data"]["comments"][0]["comment"]
+                item["comment_content"] = item["comment_content"].split()
+                item["comment_content"] = ";".join(item["comment_content"])
+
+                # 每一条评论的url
+                item["comment_url"] = comment_url
+
+                print(item)
+                self.save_item(self.file_name, item)
+
+
+if __name__ == '__main__':
+    meituan = MeiTuan()
+    meituan.run()
