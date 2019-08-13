@@ -1,0 +1,104 @@
+
+"""
+获取上海写字楼信息  "https://sh.58.com/zhaozu/pn1"
+
+反爬是详情页有复杂的验证码，使用time.sleep
+"""
+
+import requests
+from lxml import etree
+import time
+import csv
+
+
+class XieZiLou:
+    def __init__(self):
+        self.headers = {
+            "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.100 Safari/537.36"}
+
+        self.url = "https://sh.58.com/zhaozu/pn1"
+        self.url_temp = "https://sh.58.com/zhaozu/pn{}"
+
+        # 保存的文件名
+        self.file_name = "上海写字楼.csv"
+
+    def get_response(self, url):
+        """发送请求获取可xpath的响应对象"""
+        response = requests.get(url, headers=self.headers)
+        response = response.content.decode()
+        response = etree.HTML(response)
+        return response
+
+    def get_main_info(self, li, item):
+        """传递xpath的li标签，获取item"""
+        item["标题"] = li.xpath("./div[@class='list-info']/h2[@class='title']//span/text()")
+        item["标题"] = item["标题"][0] if len(item["标题"]) > 0 else None
+        item["详情链接"] = li.xpath("./div[@class='list-info']/h2[@class='title']/a/@href")
+        item["详情链接"] = item["详情链接"][0] if len(item["详情链接"]) > 0 else None
+        item["详情链接"] = item["详情链接"].replace(r'^desc', '')
+        item["基本信息"] = li.xpath("./div[@class='list-info']/p[1]//text()")
+        item["基本信息"] = [i.strip() for i in item["基本信息"]]
+        item["基本信息"] = [i for i in item["基本信息"] if i != ""]
+        item["基本信息"] = ",".join(item["基本信息"])
+        return item
+
+    def create_save_title(self):
+        """
+        创建保存csv的表头，方式w
+        :return:
+        """
+        with open(self.file_name, "a", encoding="utf-8-sig") as f:
+            f.write("计数,标题,商品链接,基本信息,起租期")
+            f.write("\n")
+
+    def save_item(self, item):
+        """
+        保存数据item到csv里面，方式a
+        :param item: 数据项item
+        :return:
+        """
+        with open(self.file_name, "a", encoding="utf-8-sig") as f:
+            writer = csv.DictWriter(f, fieldnames=item.keys())
+            writer.writerow(item)
+
+    def run(self):
+        # 创建保存文件的表头
+        self.create_save_title()
+
+        # 计数
+        count = 1
+        for i in range(50, 71):
+            print("正在爬取第{}页".format(i))
+            url = self.url_temp.format(i)
+            # 发送请求获取可xpath的对象
+            response = self.get_response(url)
+
+            # 数据项
+            item = {}
+            li_list = response.xpath("//div[@class='content-side-left']//li")
+            print(len(li_list))
+
+            # 遍历列表页的每一个li标签，获取数据
+            for li in li_list:
+                item["计数"] = count
+                count += 1
+
+                # 获取每一个li标签
+                self.get_main_info(li, item)
+
+                # 发送详情页请求，并提取详情页数据
+                response = self.get_response(item["详情链接"])
+                item["起租期"] = response.xpath("//span[text()='起租期：']/../span[2]/text()")
+                item["起租期"] = item["起租期"][0] if len(item["起租期"]) > 0 else None
+
+                # 添加延迟
+                time.sleep(1)
+
+                # 保存数据
+                print(item)
+                self.save_item(item)
+
+
+if __name__ == '__main__':
+    xiezilou = XieZiLou()
+    xiezilou.run()
